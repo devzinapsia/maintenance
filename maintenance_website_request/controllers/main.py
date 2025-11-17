@@ -58,19 +58,27 @@ class MaintenanceWebsiteRequest(http.Controller):
         
         # Crear la solicitud de mantenimiento
         try:
-            # Obtener el empleado seleccionado
+            # Obtener el empleado y equipo seleccionados
             employee = request.env['hr.employee'].sudo().browse(int(post.get('employee_id')))
+            equipment = request.env['maintenance.equipment'].sudo().browse(int(post.get('equipment_id')))
             
-            # Crear la solicitud
-            maintenance_request = request.env['maintenance.request'].sudo().create({
+            # Preparar valores para la solicitud
+            vals = {
                 'name': _('Solicitud desde sitio web - %s') % employee.name,
                 'request_date': request.env.cr.now(),
                 'owner_user_id': employee.user_id.id if employee.user_id else False,
-                'equipment_id': int(post.get('equipment_id')),
+                'equipment_id': equipment.id,
                 'description': post.get('description'),
                 'maintenance_type': 'corrective',
                 'schedule_date': request.env.cr.now(),
-            })
+            }
+            
+            # Usar la empresa del equipo si existe
+            if equipment.company_id:
+                vals['company_id'] = equipment.company_id.id
+            
+            # Crear la solicitud
+            maintenance_request = request.env['maintenance.request'].sudo().create(vals)
             
             # Redirigir a página de confirmación
             return request.redirect('/maintenance/request/thanks?request_id=%s' % maintenance_request.id)
