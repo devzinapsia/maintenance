@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import base64
 from odoo import http, _
 from odoo.http import request
 
@@ -79,6 +80,21 @@ class MaintenanceWebsiteRequest(http.Controller):
             
             # Crear la solicitud
             maintenance_request = request.env['maintenance.request'].sudo().create(vals)
+            
+            # Procesar archivo adjunto si existe
+            attachment_file = request.httprequest.files.get('attachment')
+            if attachment_file and attachment_file.filename:
+                # Leer el contenido del archivo
+                file_content = attachment_file.read()
+                
+                # Crear el adjunto
+                request.env['ir.attachment'].sudo().create({
+                    'name': attachment_file.filename,
+                    'datas': base64.b64encode(file_content),
+                    'res_model': 'maintenance.request',
+                    'res_id': maintenance_request.id,
+                    'type': 'binary',
+                })
             
             # Redirigir a página de confirmación
             return request.redirect('/maintenance/request/thanks?request_id=%s' % maintenance_request.id)

@@ -3,121 +3,142 @@
     <!-- Template del formulario de solicitud de mantenimiento -->
     <template id="maintenance_request_form_template" name="Maintenance Request Form">
         <t t-call="website.layout">
-            <div id="wrap" class="oe_structure oe_empty">
-                <section class="pt-5 pb-5">
+            <div id="wrap" class="oe_structure">
+                <section class="py-5" style="background-color: #f8f9fa;">
                     <div class="container">
-                        <div class="row">
-                            <div class="col-lg-8 offset-lg-2">
-                                <h1 class="text-center mb-4">Solicitud de Mantenimiento</h1>
-                                
-                                <!-- Mensajes de error -->
-                                <t t-if="error_message">
-                                    <div class="alert alert-danger" role="alert">
-                                        <t t-foreach="error_message" t-as="err">
-                                            <p class="mb-0"><t t-esc="err"/></p>
-                                        </t>
-                                    </div>
-                                </t>
-                                
-                                <form action="/maintenance/request/submit" method="post" enctype="multipart/form-data">
-                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                    
-                                    <!-- Campo: Responsable (Empleado) -->
-                                    <div class="mb-3">
-                                        <label for="employee_id" class="form-label">
-                                            Responsable (Solicitado por) <span class="text-danger">*</span>
-                                        </label>
-                                        <select name="employee_id" 
-                                                id="employee_id" 
-                                                class="form-select" 
-                                                required="required"
-                                                t-att-class="'is-invalid' if error.get('employee_id') else ''">
-                                            <option value="">-- Seleccione un empleado --</option>
-                                            <t t-foreach="employees" t-as="employee">
-                                                <option t-att-value="employee.id" 
-                                                        t-att-selected="'selected' if str(employee.id) == str(employee_id) else None">
-                                                    <t t-esc="employee.name"/>
-                                                </option>
-                                            </t>
-                                        </select>
-                                        <t t-if="error.get('employee_id')">
-                                            <div class="invalid-feedback d-block">
-                                                Por favor seleccione un responsable.
-                                            </div>
-                                        </t>
-                                        <div class="form-text">
-                                            Seleccione el empleado que solicita el mantenimiento.
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Campo: Equipo -->
-                                    <div class="mb-3">
-                                        <label for="equipment_id" class="form-label">
-                                            Equipo Averiado <span class="text-danger">*</span>
-                                        </label>
-                                        <select name="equipment_id" 
-                                                id="equipment_id" 
-                                                class="form-select" 
-                                                required="required"
-                                                t-att-class="'is-invalid' if error.get('equipment_id') else ''">
-                                            <option value="">-- Seleccione un equipo --</option>
-                                            <t t-foreach="equipments" t-as="equipment">
-                                                <option t-att-value="equipment.id"
-                                                        t-att-selected="'selected' if str(equipment.id) == str(equipment_id) else None">
-                                                    <t t-esc="equipment.name"/>
-                                                    <t t-if="equipment.category_id"> - <t t-esc="equipment.category_id.name"/></t>
-                                                </option>
-                                            </t>
-                                        </select>
-                                        <t t-if="error.get('equipment_id')">
-                                            <div class="invalid-feedback d-block">
-                                                Por favor seleccione un equipo.
-                                            </div>
-                                        </t>
-                                        <div class="form-text">
-                                            Seleccione el equipo que requiere mantenimiento.
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Campo: Descripción -->
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">
-                                            Descripción del Problema <span class="text-danger">*</span>
-                                        </label>
-                                        <textarea name="description" 
-                                                  id="description" 
-                                                  class="form-control" 
-                                                  rows="6" 
-                                                  required="required"
-                                                  placeholder="Describa detalladamente el problema detectado..."
-                                                  t-att-class="'is-invalid' if error.get('description') else ''"><t t-if="description" t-esc="description"/></textarea>
-                                        <t t-if="error.get('description')">
-                                            <div class="invalid-feedback d-block">
-                                                <t t-if="error.get('description') == 'missing'">
-                                                    Por favor ingrese una descripción.
-                                                </t>
-                                                <t t-if="error.get('description') == 'too_short'">
-                                                    La descripción debe tener al menos 10 caracteres.
+                        <div class="row justify-content-center">
+                            <div class="col-lg-7 col-md-9">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-body p-4 p-md-5">
+                                        <!-- Título -->
+                                        <h1 class="h2 mb-4 text-center">Solicitud de Mantenimiento</h1>
+                                        
+                                        <!-- Mensajes de error -->
+                                        <t t-if="error_message">
+                                            <div class="alert alert-danger mb-4" role="alert">
+                                                <t t-foreach="error_message" t-as="err">
+                                                    <p class="mb-0"><t t-esc="err"/></p>
                                                 </t>
                                             </div>
                                         </t>
-                                        <div class="form-text">
-                                            Proporcione una descripción detallada del problema (mínimo 10 caracteres).
-                                        </div>
+                                        
+                                        <!-- Formulario -->
+                                        <form action="/maintenance/request/submit" method="post" enctype="multipart/form-data">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            
+                                            <!-- Campo: Responsable (Empleado) -->
+                                            <div class="mb-4">
+                                                <label for="employee_id" class="form-label fw-normal">
+                                                    Responsable (Solicitado por) <span class="text-danger">*</span>
+                                                </label>
+                                                <select name="employee_id" 
+                                                        id="employee_id" 
+                                                        class="form-select form-select-lg" 
+                                                        required="required"
+                                                        t-att-class="'is-invalid' if error.get('employee_id') else ''">
+                                                    <option value="">-- Seleccione un empleado --</option>
+                                                    <t t-foreach="employees" t-as="employee">
+                                                        <option t-att-value="employee.id" 
+                                                                t-att-selected="'selected' if str(employee.id) == str(employee_id) else None">
+                                                            <t t-esc="employee.name"/>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                                <t t-if="error.get('employee_id')">
+                                                    <div class="invalid-feedback d-block">
+                                                        Por favor seleccione un responsable.
+                                                    </div>
+                                                </t>
+                                                <small class="form-text text-muted">
+                                                    Seleccione el empleado que solicita el mantenimiento.
+                                                </small>
+                                            </div>
+                                            
+                                            <!-- Campo: Equipo -->
+                                            <div class="mb-4">
+                                                <label for="equipment_id" class="form-label fw-normal">
+                                                    Equipo Averiado <span class="text-danger">*</span>
+                                                </label>
+                                                <select name="equipment_id" 
+                                                        id="equipment_id" 
+                                                        class="form-select form-select-lg" 
+                                                        required="required"
+                                                        t-att-class="'is-invalid' if error.get('equipment_id') else ''">
+                                                    <option value="">-- Seleccione un equipo --</option>
+                                                    <t t-foreach="equipments" t-as="equipment">
+                                                        <option t-att-value="equipment.id"
+                                                                t-att-selected="'selected' if str(equipment.id) == str(equipment_id) else None">
+                                                            <t t-esc="equipment.name"/>
+                                                            <t t-if="equipment.category_id"> - <t t-esc="equipment.category_id.name"/></t>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                                <t t-if="error.get('equipment_id')">
+                                                    <div class="invalid-feedback d-block">
+                                                        Por favor seleccione un equipo.
+                                                    </div>
+                                                </t>
+                                                <small class="form-text text-muted">
+                                                    Seleccione el equipo que requiere mantenimiento.
+                                                </small>
+                                            </div>
+                                            
+                                            <!-- Campo: Descripción -->
+                                            <div class="mb-4">
+                                                <label for="description" class="form-label fw-normal">
+                                                    Descripción del Problema <span class="text-danger">*</span>
+                                                </label>
+                                                <textarea name="description" 
+                                                          id="description" 
+                                                          class="form-control form-control-lg" 
+                                                          rows="5" 
+                                                          required="required"
+                                                          placeholder="Describa detalladamente el problema detectado..."
+                                                          t-att-class="'is-invalid' if error.get('description') else ''"><t t-if="description" t-esc="description"/></textarea>
+                                                <t t-if="error.get('description')">
+                                                    <div class="invalid-feedback d-block">
+                                                        <t t-if="error.get('description') == 'missing'">
+                                                            Por favor ingrese una descripción.
+                                                        </t>
+                                                        <t t-if="error.get('description') == 'too_short'">
+                                                            La descripción debe tener al menos 10 caracteres.
+                                                        </t>
+                                                    </div>
+                                                </t>
+                                                <small class="form-text text-muted">
+                                                    Proporcione una descripción detallada del problema (mínimo 10 caracteres).
+                                                </small>
+                                            </div>
+                                            
+                                            <!-- Campo: Archivo adjunto -->
+                                            <div class="mb-4">
+                                                <label for="attachment" class="form-label fw-normal">
+                                                    Archivo adjunto
+                                                </label>
+                                                <input type="file" 
+                                                       name="attachment" 
+                                                       id="attachment" 
+                                                       class="form-control form-control-lg"
+                                                       accept="image/*,.pdf,.doc,.docx,.txt"/>
+                                                <small class="form-text text-muted">
+                                                    Adjunte fotos o documentos relacionados con el problema (opcional).
+                                                </small>
+                                            </div>
+                                            
+                                            <!-- Botón de envío -->
+                                            <div class="d-grid gap-2 mb-3">
+                                                <button type="submit" class="btn btn-primary btn-lg py-3">
+                                                    <i class="fa fa-paper-plane me-2"></i>
+                                                    Enviar Solicitud
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="text-center text-muted">
+                                                <small>* Campos obligatorios</small>
+                                            </div>
+                                        </form>
                                     </div>
-                                    
-                                    <!-- Botón de envío -->
-                                    <div class="mb-3 text-center">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <i class="fa fa-paper-plane me-2"></i>
-                                            Enviar Solicitud
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="text-center text-muted">
-                                        <small>* Campos obligatorios</small>
-                                    </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -129,35 +150,39 @@
     <!-- Template de página de agradecimiento -->
     <template id="maintenance_request_thanks_template" name="Maintenance Request Thanks">
         <t t-call="website.layout">
-            <div id="wrap" class="oe_structure oe_empty">
-                <section class="pt-5 pb-5">
+            <div id="wrap" class="oe_structure">
+                <section class="py-5" style="background-color: #f8f9fa;">
                     <div class="container">
-                        <div class="row">
-                            <div class="col-lg-8 offset-lg-2 text-center">
-                                <div class="alert alert-success p-5" role="alert">
-                                    <i class="fa fa-check-circle fa-4x mb-4 text-success"></i>
-                                    <h1 class="mb-4">¡Solicitud Enviada Satisfactoriamente!</h1>
-                                    <p class="lead mb-4">
-                                        Su solicitud de mantenimiento ha sido registrada exitosamente.
-                                    </p>
-                                    <p class="mb-4">
-                                        Nuestro equipo técnico revisará su solicitud y se pondrá en contacto con usted a la brevedad para coordinar el mantenimiento.
-                                    </p>
-                                    <t t-if="request_id">
-                                        <p class="text-muted">
-                                            <strong>Número de solicitud:</strong> #<t t-esc="request_id"/>
+                        <div class="row justify-content-center">
+                            <div class="col-lg-7 col-md-9">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-body p-4 p-md-5 text-center">
+                                        <div class="mb-4">
+                                            <i class="fa fa-check-circle text-success" style="font-size: 5rem;"></i>
+                                        </div>
+                                        <h1 class="h2 mb-4">¡Solicitud Enviada Satisfactoriamente!</h1>
+                                        <p class="lead mb-4">
+                                            Su solicitud de mantenimiento ha sido registrada exitosamente.
                                         </p>
-                                    </t>
-                                    <hr class="my-4"/>
-                                    <div class="mt-4">
-                                        <a href="/maintenance/request" class="btn btn-primary me-2">
-                                            <i class="fa fa-plus me-2"></i>
-                                            Nueva Solicitud
-                                        </a>
-                                        <a href="/" class="btn btn-secondary">
-                                            <i class="fa fa-home me-2"></i>
-                                            Volver al Inicio
-                                        </a>
+                                        <p class="mb-4 text-muted">
+                                            Nuestro equipo técnico revisará su solicitud y se pondrá en contacto con usted a la brevedad para coordinar el mantenimiento.
+                                        </p>
+                                        <t t-if="request_id">
+                                            <div class="alert alert-info d-inline-block">
+                                                <strong>Número de solicitud:</strong> #<t t-esc="request_id"/>
+                                            </div>
+                                        </t>
+                                        <hr class="my-4"/>
+                                        <div class="d-grid gap-2 d-md-block">
+                                            <a href="/maintenance/request" class="btn btn-primary btn-lg me-md-2 mb-2 mb-md-0">
+                                                <i class="fa fa-plus me-2"></i>
+                                                Nueva Solicitud
+                                            </a>
+                                            <a href="/" class="btn btn-outline-secondary btn-lg">
+                                                <i class="fa fa-home me-2"></i>
+                                                Volver al Inicio
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
