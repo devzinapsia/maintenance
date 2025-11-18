@@ -10,13 +10,15 @@ class MaintenanceWebsiteRequest(http.Controller):
     @http.route('/maintenance/request', type='http', auth='public', website=True, sitemap=True)
     def maintenance_request_form(self, **kwargs):
         """Renderiza el formulario de solicitud de mantenimiento"""
-        # Obtener empleados y equipos disponibles
+        # Obtener empleados, equipos y equipos de mantenimiento disponibles
         employees = request.env['hr.employee'].sudo().search([])
         equipments = request.env['maintenance.equipment'].sudo().search([])
+        maintenance_teams = request.env['maintenance.team'].sudo().search([])
         
         values = {
             'employees': employees,
             'equipments': equipments,
+            'maintenance_teams': maintenance_teams,
             'error': {},
             'error_message': [],
         }
@@ -30,7 +32,7 @@ class MaintenanceWebsiteRequest(http.Controller):
         error_message = []
         
         # Validación de campos requeridos
-        required_fields = ['employee_id', 'equipment_id', 'description']
+        required_fields = ['employee_id', 'maintenance_team_id', 'equipment_id', 'description']
         for field in required_fields:
             if not post.get(field):
                 error[field] = 'missing'
@@ -44,13 +46,16 @@ class MaintenanceWebsiteRequest(http.Controller):
         if error:
             employees = request.env['hr.employee'].sudo().search([])
             equipments = request.env['maintenance.equipment'].sudo().search([])
+            maintenance_teams = request.env['maintenance.team'].sudo().search([])
             
             values = {
                 'employees': employees,
                 'equipments': equipments,
+                'maintenance_teams': maintenance_teams,
                 'error': error,
                 'error_message': error_message,
                 'employee_id': post.get('employee_id'),
+                'maintenance_team_id': post.get('maintenance_team_id'),
                 'equipment_id': post.get('equipment_id'),
                 'description': post.get('description'),
             }
@@ -68,6 +73,7 @@ class MaintenanceWebsiteRequest(http.Controller):
                 'name': _('Solicitud desde sitio web - %s') % employee.name,
                 'request_date': request.env.cr.now(),
                 'owner_user_id': employee.user_id.id if employee.user_id else False,
+                'maintenance_team_id': int(post.get('maintenance_team_id')),
                 'equipment_id': equipment.id,
                 'description': post.get('description'),
                 'maintenance_type': 'corrective',
@@ -104,13 +110,16 @@ class MaintenanceWebsiteRequest(http.Controller):
             
             employees = request.env['hr.employee'].sudo().search([])
             equipments = request.env['maintenance.equipment'].sudo().search([])
+            maintenance_teams = request.env['maintenance.team'].sudo().search([])
             
             values = {
                 'employees': employees,
                 'equipments': equipments,
+                'maintenance_teams': maintenance_teams,
                 'error': error,
                 'error_message': error_message,
                 'employee_id': post.get('employee_id'),
+                'maintenance_team_id': post.get('maintenance_team_id'),
                 'equipment_id': post.get('equipment_id'),
                 'description': post.get('description'),
             }

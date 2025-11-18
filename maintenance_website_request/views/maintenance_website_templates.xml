@@ -33,6 +33,17 @@
                                         </div>
                                         
                                         <div class="mb-3">
+                                            <label class="form-label">Equipo de Mantenimiento <span class="text-danger">*</span></label>
+                                            <select name="maintenance_team_id" class="form-select" required="required">
+                                                <option value="">-- Seleccione un equipo --</option>
+                                                <t t-foreach="maintenance_teams" t-as="team">
+                                                    <option t-att-value="team.id"><t t-esc="team.name"/></option>
+                                                </t>
+                                            </select>
+                                            <small class="form-text text-muted">Seleccione el equipo que gestionará esta solicitud.</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
                                             <label class="form-label">Equipo Averiado <span class="text-danger">*</span></label>
                                             <select name="equipment_id" class="form-select" required="required">
                                                 <option value="">-- Seleccione un equipo --</option>
