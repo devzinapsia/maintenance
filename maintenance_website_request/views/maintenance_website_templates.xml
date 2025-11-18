@@ -25,11 +25,18 @@
                                         
                                         <!-- Campo: Responsable -->
                                         <div class="mb-3">
-                                            <label class="form-label">Responsable (Solicitado por) <span class="text-danger">*</span></label>
-                                            <select name="employee_id" class="form-select" required="required" t-att-class="'is-invalid' if error.get('employee_id') else ''">
+                                            <label for="employee_id" class="form-label">
+                                                Responsable (Solicitado por) <span class="text-danger">*</span>
+                                            </label>
+                                            <select name="employee_id" 
+                                                    id="employee_id"
+                                                    class="form-select form-select-lg" 
+                                                    required="required" 
+                                                    t-att-class="'is-invalid' if error.get('employee_id') else ''">
                                                 <option value="">-- Seleccione un empleado --</option>
                                                 <t t-foreach="employees" t-as="employee">
-                                                    <option t-att-value="employee.id" t-att-selected="'selected' if str(employee.id) == str(employee_id) else None">
+                                                    <option t-att-value="employee.id" 
+                                                            t-att-selected="'selected' if str(employee.id) == str(employee_id) else None">
                                                         <t t-esc="employee.name"/>
                                                     </option>
                                                 </t>
@@ -37,16 +44,23 @@
                                             <t t-if="error.get('employee_id')">
                                                 <div class="invalid-feedback d-block">Por favor seleccione un responsable.</div>
                                             </t>
-                                            <small class="text-muted">Seleccione el empleado que solicita el mantenimiento.</small>
+                                            <div class="form-text">Seleccione el empleado que solicita el mantenimiento.</div>
                                         </div>
                                         
                                         <!-- Campo: Equipo -->
                                         <div class="mb-3">
-                                            <label class="form-label">Equipo Averiado <span class="text-danger">*</span></label>
-                                            <select name="equipment_id" class="form-select" required="required" t-att-class="'is-invalid' if error.get('equipment_id') else ''">
+                                            <label for="equipment_id" class="form-label">
+                                                Equipo Averiado <span class="text-danger">*</span>
+                                            </label>
+                                            <select name="equipment_id" 
+                                                    id="equipment_id"
+                                                    class="form-select form-select-lg" 
+                                                    required="required" 
+                                                    t-att-class="'is-invalid' if error.get('equipment_id') else ''">
                                                 <option value="">-- Seleccione un equipo --</option>
                                                 <t t-foreach="equipments" t-as="equipment">
-                                                    <option t-att-value="equipment.id" t-att-selected="'selected' if str(equipment.id) == str(equipment_id) else None">
+                                                    <option t-att-value="equipment.id" 
+                                                            t-att-selected="'selected' if str(equipment.id) == str(equipment_id) else None">
                                                         <t t-esc="equipment.name"/>
                                                         <t t-if="equipment.category_id"> - <t t-esc="equipment.category_id.name"/></t>
                                                     </option>
@@ -55,32 +69,43 @@
                                             <t t-if="error.get('equipment_id')">
                                                 <div class="invalid-feedback d-block">Por favor seleccione un equipo.</div>
                                             </t>
-                                            <small class="text-muted">Seleccione el equipo que requiere mantenimiento.</small>
+                                            <div class="form-text">Seleccione el equipo que requiere mantenimiento.</div>
                                         </div>
                                         
                                         <!-- Campo: Descripción -->
                                         <div class="mb-3">
-                                            <label class="form-label">Descripción del Problema <span class="text-danger">*</span></label>
-                                            <textarea name="description" class="form-control" rows="5" required="required" placeholder="Describa detalladamente el problema detectado..." t-att-class="'is-invalid' if error.get('description') else ''"><t t-if="description" t-esc="description"/></textarea>
+                                            <label for="description" class="form-label">
+                                                Descripción del Problema <span class="text-danger">*</span>
+                                            </label>
+                                            <textarea name="description" 
+                                                      id="description"
+                                                      class="form-control form-control-lg" 
+                                                      rows="5" 
+                                                      required="required" 
+                                                      placeholder="Describa detalladamente el problema detectado..." 
+                                                      t-att-class="'is-invalid' if error.get('description') else ''"><t t-if="description" t-esc="description"/></textarea>
                                             <t t-if="error.get('description')">
                                                 <div class="invalid-feedback d-block">
                                                     <t t-if="error.get('description') == 'missing'">Por favor ingrese una descripción.</t>
                                                     <t t-if="error.get('description') == 'too_short'">La descripción debe tener al menos 10 caracteres.</t>
                                                 </div>
                                             </t>
-                                            <small class="text-muted">Proporcione una descripción detallada del problema (mínimo 10 caracteres).</small>
                                         </div>
                                         
                                         <!-- Campo: Archivo adjunto -->
                                         <div class="mb-4">
-                                            <label class="form-label">Archivo adjunto</label>
-                                            <input type="file" name="attachment" class="form-control" accept="image/*,.pdf,.doc,.docx,.txt"/>
-                                            <small class="text-muted">Adjunte fotos o documentos relacionados con el problema (opcional).</small>
+                                            <label for="attachment" class="form-label">Archivo adjunto</label>
+                                            <input type="file" 
+                                                   name="attachment" 
+                                                   id="attachment"
+                                                   class="form-control form-control-lg" 
+                                                   accept="image/*,.pdf,.doc,.docx,.txt"/>
+                                            <div class="form-text">Adjunte fotos o documentos relacionados con el problema (opcional).</div>
                                         </div>
                                         
                                         <!-- Botón -->
                                         <div class="d-grid">
-                                            <button type="submit" class="btn btn-primary btn-lg">
+                                            <button type="submit" class="btn btn-primary btn-lg py-3">
                                                 <i class="fa fa-paper-plane me-2"></i>Enviar Solicitud
                                             </button>
                                         </div>
