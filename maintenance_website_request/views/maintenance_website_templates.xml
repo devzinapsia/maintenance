@@ -97,11 +97,11 @@
                                     <h1 class="mb-4">¡Solicitud Enviada Satisfactoriamente!</h1>
                                     <p class="lead mb-3">Su solicitud de mantenimiento ha sido registrada exitosamente.</p>
                                     <p class="text-muted mb-4">Nuestro equipo técnico revisará su solicitud y se pondrá en contacto con usted a la brevedad.</p>
-                                    <t t-if="request_id">
+                                    <!-- <t t-if="request_id">
                                         <div class="alert alert-info d-inline-block mb-4">
                                             <strong>Número de solicitud:</strong> #<t t-esc="request_id"/>
                                         </div>
-                                    </t>
+                                    </t> -->
                                     <div>
                                         <a href="/maintenance/request" class="btn btn-primary btn-lg me-2">
                                             <i class="fa fa-plus me-2"></i>Nueva Solicitud
