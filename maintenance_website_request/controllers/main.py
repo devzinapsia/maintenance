@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import base64
 from odoo import http, _
 from odoo.http import request
 
@@ -9,18 +10,43 @@ class MaintenanceWebsiteRequest(http.Controller):
     @http.route('/maintenance/request', type='http', auth='public', website=True, sitemap=True)
     def maintenance_request_form(self, **kwargs):
         """Renderiza el formulario de solicitud de mantenimiento"""
-        # Obtener empleados y equipos disponibles
+        # Obtener empleados, equipos y equipos de mantenimiento disponibles
         employees = request.env['hr.employee'].sudo().search([])
         equipments = request.env['maintenance.equipment'].sudo().search([])
+        maintenance_teams = request.env['maintenance.team'].sudo().search([])
         
         values = {
             'employees': employees,
             'equipments': equipments,
+            'maintenance_teams': maintenance_teams,
             'error': {},
             'error_message': [],
         }
         
         return request.render('maintenance_website_request.maintenance_request_form_template', values)
+
+    @http.route('/maintenance/get_equipments', type='json', auth='public', website=True)
+    def get_equipments_by_team(self, team_id=None, **kwargs):
+        """Obtiene equipos filtrados por equipo de mantenimiento"""
+        if not team_id:
+            equipments = request.env['maintenance.equipment'].sudo().search([])
+        else:
+            # Primero intentamos con maintenance_team_id (Many2one - más común)
+            equipments = request.env['maintenance.equipment'].sudo().search([
+                ('maintenance_team_id', '=', int(team_id))
+            ])
+            
+            # Si no encuentra nada, intenta con maintenance_team_ids (Many2many)
+            if not equipments:
+                equipments = request.env['maintenance.equipment'].sudo().search([
+                    ('maintenance_team_ids', 'in', [int(team_id)])
+                ])
+        
+        return [{
+            'id': eq.id,
+            'name': eq.name,
+            'category': eq.category_id.name if eq.category_id else ''
+        } for eq in equipments]
 
     @http.route('/maintenance/request/submit', type='http', auth='public', website=True, methods=['POST'], csrf=True)
     def maintenance_request_submit(self, **post):
@@ -29,7 +55,7 @@ class MaintenanceWebsiteRequest(http.Controller):
         error_message = []
         
         # Validación de campos requeridos
-        required_fields = ['employee_id', 'equipment_id', 'description']
+        required_fields = ['employee_id', 'maintenance_team_id', 'equipment_id', 'description']
         for field in required_fields:
             if not post.get(field):
                 error[field] = 'missing'
@@ -43,30 +69,64 @@ class MaintenanceWebsiteRequest(http.Controller):
         if error:
             employees = request.env['hr.employee'].sudo().search([])
             equipments = request.env['maintenance.equipment'].sudo().search([])
+            maintenance_teams = request.env['maintenance.team'].sudo().search([])
             
             values = {
                 'employees': employees,
                 'equipments': equipments,
+                'maintenance_teams': maintenance_teams,
                 'error': error,
                 'error_message': error_message,
                 'employee_id': post.get('employee_id'),
+                'maintenance_team_id': post.get('maintenance_team_id'),
                 'equipment_id': post.get('equipment_id'),
                 'description': post.get('description'),
+                'priority': post.get('priority', '2'),
             }
             
             return request.render('maintenance_website_request.maintenance_request_form_template', values)
         
         # Crear la solicitud de mantenimiento
         try:
-            maintenance_request = request.env['maintenance.request'].sudo().create({
-                'name': _('Solicitud desde sitio web - %s') % post.get('equipment_id'),
+            # Obtener el empleado y equipo seleccionados
+            employee = request.env['hr.employee'].sudo().browse(int(post.get('employee_id')))
+            equipment = request.env['maintenance.equipment'].sudo().browse(int(post.get('equipment_id')))
+            
+            # Preparar valores para la solicitud
+            vals = {
+                'name': _('Solicitud desde sitio web - %s') % employee.name,
                 'request_date': request.env.cr.now(),
-                'owner_user_id': int(post.get('employee_id')),  # Solicitado por
-                'equipment_id': int(post.get('equipment_id')),
+                'owner_user_id': employee.user_id.id if employee.user_id else False,
+                'employee_id': employee.id,
+                'maintenance_team_id': int(post.get('maintenance_team_id')),
+                'equipment_id': equipment.id,
                 'description': post.get('description'),
-                'maintenance_type': 'corrective',  # Por defecto correctivo
+                'maintenance_type': 'corrective',
                 'schedule_date': request.env.cr.now(),
-            })
+                'priority': post.get('priority', '2'),
+            }
+            
+            # Usar la empresa del equipo si existe
+            if equipment.company_id:
+                vals['company_id'] = equipment.company_id.id
+            
+            # Crear la solicitud
+            maintenance_request = request.env['maintenance.request'].sudo().create(vals)
+            
+            # Procesar archivo adjunto si existe
+            attachment_file = request.httprequest.files.get('attachment')
+            if attachment_file and attachment_file.filename:
+                # Leer el contenido del archivo
+                file_content = attachment_file.read()
+                
+                # Crear el adjunto
+                request.env['ir.attachment'].sudo().create({
+                    'name': attachment_file.filename,
+                    'datas': base64.b64encode(file_content),
+                    'res_model': 'maintenance.request',
+                    'res_id': maintenance_request.id,
+                    'type': 'binary',
+                })
             
             # Redirigir a página de confirmación
             return request.redirect('/maintenance/request/thanks?request_id=%s' % maintenance_request.id)
@@ -76,15 +136,19 @@ class MaintenanceWebsiteRequest(http.Controller):
             
             employees = request.env['hr.employee'].sudo().search([])
             equipments = request.env['maintenance.equipment'].sudo().search([])
+            maintenance_teams = request.env['maintenance.team'].sudo().search([])
             
             values = {
                 'employees': employees,
                 'equipments': equipments,
+                'maintenance_teams': maintenance_teams,
                 'error': error,
                 'error_message': error_message,
                 'employee_id': post.get('employee_id'),
+                'maintenance_team_id': post.get('maintenance_team_id'),
                 'equipment_id': post.get('equipment_id'),
                 'description': post.get('description'),
+                'priority': post.get('priority', '2'),
             }
             
             return request.render('maintenance_website_request.maintenance_request_form_template', values)
