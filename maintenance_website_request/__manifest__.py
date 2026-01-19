@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Maintenance Website Request',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.2',
     'category': 'Maintenance',
     'summary': 'Crear solicitudes de mantenimiento desde el sitio web',
     'description': """
@@ -11,7 +11,7 @@
         - Equipo averiado
         - Descripción del problema
     """,
-    'author': 'Zinapsia SRL',
+    'author': 'Zinapsia',
     'website': 'https://www.zinapsia.com',
     'depends': [
         'maintenance',
