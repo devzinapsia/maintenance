@@ -31,9 +31,16 @@ class MaintenanceWebsiteRequest(http.Controller):
         if not team_id:
             equipments = request.env['maintenance.equipment'].sudo().search([])
         else:
+            # Primero intentamos con maintenance_team_id (Many2one - más común)
             equipments = request.env['maintenance.equipment'].sudo().search([
-                ('maintenance_team_ids', 'in', [int(team_id)])
+                ('maintenance_team_id', '=', int(team_id))
             ])
+            
+            # Si no encuentra nada, intenta con maintenance_team_ids (Many2many)
+            if not equipments:
+                equipments = request.env['maintenance.equipment'].sudo().search([
+                    ('maintenance_team_ids', 'in', [int(team_id)])
+                ])
         
         return [{
             'id': eq.id,
