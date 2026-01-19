@@ -25,6 +25,22 @@ class MaintenanceWebsiteRequest(http.Controller):
         
         return request.render('maintenance_website_request.maintenance_request_form_template', values)
 
+    @http.route('/maintenance/get_equipments', type='json', auth='public', website=True)
+    def get_equipments_by_team(self, team_id=None, **kwargs):
+        """Obtiene equipos filtrados por equipo de mantenimiento"""
+        if not team_id:
+            equipments = request.env['maintenance.equipment'].sudo().search([])
+        else:
+            equipments = request.env['maintenance.equipment'].sudo().search([
+                ('maintenance_team_ids', 'in', [int(team_id)])
+            ])
+        
+        return [{
+            'id': eq.id,
+            'name': eq.name,
+            'category': eq.category_id.name if eq.category_id else ''
+        } for eq in equipments]
+
     @http.route('/maintenance/request/submit', type='http', auth='public', website=True, methods=['POST'], csrf=True)
     def maintenance_request_submit(self, **post):
         """Procesa el envío del formulario de solicitud de mantenimiento"""
@@ -58,7 +74,7 @@ class MaintenanceWebsiteRequest(http.Controller):
                 'maintenance_team_id': post.get('maintenance_team_id'),
                 'equipment_id': post.get('equipment_id'),
                 'description': post.get('description'),
-                'priority': post.get('priority', '2'), 
+                'priority': post.get('priority', '2'),
             }
             
             return request.render('maintenance_website_request.maintenance_request_form_template', values)
@@ -79,7 +95,7 @@ class MaintenanceWebsiteRequest(http.Controller):
                 'description': post.get('description'),
                 'maintenance_type': 'corrective',
                 'schedule_date': request.env.cr.now(),
-                'priority': post.get('priority', '2'), 
+                'priority': post.get('priority', '2'),
             }
             
             # Usar la empresa del equipo si existe
@@ -124,6 +140,7 @@ class MaintenanceWebsiteRequest(http.Controller):
                 'maintenance_team_id': post.get('maintenance_team_id'),
                 'equipment_id': post.get('equipment_id'),
                 'description': post.get('description'),
+                'priority': post.get('priority', '2'),
             }
             
             return request.render('maintenance_website_request.maintenance_request_form_template', values)

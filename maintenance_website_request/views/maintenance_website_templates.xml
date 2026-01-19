@@ -58,10 +58,10 @@
                                                     </option>
                                                 </t>
                                             </select>
-                                            <small class="form-text text-muted">Seleccione el equipo que requiere mantenimiento.</small>
+                                            <small class="form-text text-muted" id="equipment-help">Seleccione primero un departamento para filtrar los equipos.</small>
                                         </div>
                                         
-                                        <!-- NUEVO CAMPO DE PRIORIDAD -->
+                                        <!-- CAMPO DE PRIORIDAD -->
                                         <div class="mb-3">
                                             <label class="form-label">Prioridad <span class="text-danger">*</span></label>
                                             <div class="priority-stars-container">
@@ -103,6 +103,7 @@
                 </div>
             </div>
             
+            <!-- CSS PARA LAS ESTRELLAS Y EQUIPOS -->
             <style>
                 <![CDATA[
                 .priority-stars-container {
@@ -133,13 +134,30 @@
                 .priority-label {
                     font-size: 0.9rem;
                 }
+                
+                select[name="equipment_id"]:disabled {
+                    background-color: #f5f5f5;
+                    cursor: wait;
+                }
+                
+                .loading-equipments {
+                    position: relative;
+                }
+                
+                .loading-equipments::after {
+                    content: " (Cargando...)";
+                    color: #6c757d;
+                    font-style: italic;
+                    font-size: 0.875rem;
+                }
                 ]]>
             </style>
             
-            <!-- JAVASCRIPT PARA LAS ESTRELLAS -->
+            <!-- JAVASCRIPT PARA PRIORIDAD Y FILTRADO DE EQUIPOS -->
             <script type="text/javascript">
                 <![CDATA[
                 document.addEventListener('DOMContentLoaded', function() {
+                    // ========== PRIORIDAD CON ESTRELLAS ==========
                     const stars = document.querySelectorAll('.priority-star');
                     const priorityInput = document.getElementById('priority_input');
                     const priorityText = document.getElementById('priority_text');
@@ -184,6 +202,94 @@
                             }
                         });
                     }
+                    
+                    // ========== FILTRADO DE EQUIPOS POR DEPARTAMENTO ==========
+                    const teamSelect = document.querySelector('select[name="maintenance_team_id"]');
+                    const equipmentSelect = document.querySelector('select[name="equipment_id"]');
+                    const equipmentHelp = document.getElementById('equipment-help');
+                    const originalEquipments = Array.from(equipmentSelect.querySelectorAll('option'));
+                    
+                    if (teamSelect && equipmentSelect) {
+                        teamSelect.addEventListener('change', function() {
+                            const teamId = this.value;
+                            
+                            if (!teamId) {
+                                // Si no hay departamento seleccionado, mostrar todos
+                                restoreAllEquipments();
+                                equipmentHelp.textContent = 'Seleccione primero un departamento para filtrar los equipos.';
+                                return;
+                            }
+                            
+                            // Mostrar loading
+                            equipmentSelect.disabled = true;
+                            const equipmentLabel = equipmentSelect.parentElement.querySelector('label');
+                            equipmentLabel.classList.add('loading-equipments');
+                            
+                            // Llamada AJAX para obtener equipos del departamento
+                            fetch('/maintenance/get_equipments', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    jsonrpc: '2.0',
+                                    method: 'call',
+                                    params: {
+                                        team_id: teamId
+                                    }
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                const equipments = data.result;
+                                
+                                // Limpiar select de equipos
+                                equipmentSelect.innerHTML = '<option value="">-- Seleccione un equipo --</option>';
+                                
+                                if (equipments && equipments.length > 0) {
+                                    // Agregar equipos filtrados
+                                    equipments.forEach(eq => {
+                                        const option = document.createElement('option');
+                                        option.value = eq.id;
+                                        option.textContent = eq.name + (eq.category ? ' - ' + eq.category : '');
+                                        equipmentSelect.appendChild(option);
+                                    });
+                                    equipmentHelp.textContent = equipments.length + ' equipo(s) disponible(s) para este departamento.';
+                                    equipmentHelp.classList.remove('text-danger');
+                                    equipmentHelp.classList.add('text-success');
+                                } else {
+                                    // No hay equipos para este departamento
+                                    const option = document.createElement('option');
+                                    option.value = '';
+                                    option.textContent = '⚠ No hay equipos asignados a este departamento';
+                                    option.disabled = true;
+                                    equipmentSelect.appendChild(option);
+                                    equipmentHelp.textContent = 'No hay equipos asignados a este departamento. Contacte al administrador.';
+                                    equipmentHelp.classList.remove('text-success');
+                                    equipmentHelp.classList.add('text-danger');
+                                }
+                                
+                                // Remover loading
+                                equipmentSelect.disabled = false;
+                                equipmentLabel.classList.remove('loading-equipments');
+                            })
+                            .catch(error => {
+                                console.error('Error al cargar equipos:', error);
+                                restoreAllEquipments();
+                                equipmentSelect.disabled = false;
+                                equipmentLabel.classList.remove('loading-equipments');
+                                equipmentHelp.textContent = 'Error al cargar equipos. Intente nuevamente.';
+                                equipmentHelp.classList.add('text-danger');
+                            });
+                        });
+                    }
+                    
+                    function restoreAllEquipments() {
+                        equipmentSelect.innerHTML = '';
+                        originalEquipments.forEach(opt => {
+                            equipmentSelect.appendChild(opt.cloneNode(true));
+                        });
+                    }
                 });
                 ]]>
             </script>
@@ -202,11 +308,6 @@
                                     <h1 class="mb-4">¡Solicitud Enviada Satisfactoriamente!</h1>
                                     <p class="lead mb-3">Su solicitud de mantenimiento ha sido registrada exitosamente.</p>
                                     <p class="text-muted mb-4">Nuestro equipo técnico revisará su solicitud y se pondrá en contacto con usted a la brevedad.</p>
-                                    <!-- <t t-if="request_id">
-                                        <div class="alert alert-info d-inline-block mb-4">
-                                            <strong>Número de solicitud:</strong> #<t t-esc="request_id"/>
-                                        </div>
-                                    </t> -->
                                     <div>
                                         <a href="/maintenance/request" class="btn btn-primary btn-lg me-2">
                                             <i class="fa fa-plus me-2"></i>Nueva Solicitud
