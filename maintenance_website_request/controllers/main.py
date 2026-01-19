@@ -97,6 +97,7 @@ class MaintenanceWebsiteRequest(http.Controller):
                 'name': _('Solicitud desde sitio web - %s') % employee.name,
                 'request_date': request.env.cr.now(),
                 'owner_user_id': employee.user_id.id if employee.user_id else False,
+                'employee_id': employee.id,
                 'maintenance_team_id': int(post.get('maintenance_team_id')),
                 'equipment_id': equipment.id,
                 'description': post.get('description'),
