@@ -26,18 +26,22 @@
                                             <select name="employee_id" class="form-select" required="required">
                                                 <option value="">-- Seleccione un empleado --</option>
                                                 <t t-foreach="employees" t-as="employee">
-                                                    <option t-att-value="employee.id"><t t-esc="employee.name"/></option>
+                                                    <option t-att-value="employee.id" t-att-selected="'selected' if employee_id and str(employee.id) == str(employee_id) else None">
+                                                        <t t-esc="employee.name"/>
+                                                    </option>
                                                 </t>
                                             </select>
                                             <small class="form-text text-muted">Seleccione el empleado que solicita el mantenimiento.</small>
                                         </div>
                                         
                                         <div class="mb-3">
-                                            <label class="form-label">Equipo de Mantenimiento <span class="text-danger">*</span></label>
+                                            <label class="form-label">Departamento <span class="text-danger">*</span></label>
                                             <select name="maintenance_team_id" class="form-select" required="required">
                                                 <option value="">-- Seleccione un equipo --</option>
                                                 <t t-foreach="maintenance_teams" t-as="team">
-                                                    <option t-att-value="team.id"><t t-esc="team.name"/></option>
+                                                    <option t-att-value="team.id" t-att-selected="'selected' if maintenance_team_id and str(team.id) == str(maintenance_team_id) else None">
+                                                        <t t-esc="team.name"/>
+                                                    </option>
                                                 </t>
                                             </select>
                                             <small class="form-text text-muted">Seleccione el equipo que gestionará esta solicitud.</small>
@@ -48,7 +52,7 @@
                                             <select name="equipment_id" class="form-select" required="required">
                                                 <option value="">-- Seleccione un equipo --</option>
                                                 <t t-foreach="equipments" t-as="equipment">
-                                                    <option t-att-value="equipment.id">
+                                                    <option t-att-value="equipment.id" t-att-selected="'selected' if equipment_id and str(equipment.id) == str(equipment_id) else None">
                                                         <t t-esc="equipment.name"/>
                                                         <t t-if="equipment.category_id"> - <t t-esc="equipment.category_id.name"/></t>
                                                     </option>
@@ -57,9 +61,25 @@
                                             <small class="form-text text-muted">Seleccione el equipo que requiere mantenimiento.</small>
                                         </div>
                                         
+                                        <!-- NUEVO CAMPO DE PRIORIDAD -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Prioridad <span class="text-danger">*</span></label>
+                                            <div class="priority-stars-container">
+                                                <input type="hidden" name="priority" id="priority_input" t-att-value="priority or '2'"/>
+                                                <div class="priority-stars" id="priority_stars">
+                                                    <i class="fa fa-star priority-star" data-value="1"></i>
+                                                    <i class="fa fa-star priority-star" data-value="2"></i>
+                                                    <i class="fa fa-star priority-star" data-value="3"></i>
+                                                </div>
+                                                <small class="form-text text-muted d-block mt-2">
+                                                    <span class="priority-label">Prioridad: <strong id="priority_text">Normal</strong></span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
                                         <div class="mb-3">
                                             <label class="form-label">Descripción del Problema <span class="text-danger">*</span></label>
-                                            <textarea name="description" class="form-control" rows="3" required="required" placeholder="Describa detalladamente el problema detectado..."></textarea>
+                                            <textarea name="description" class="form-control" rows="3" required="required" placeholder="Describa detalladamente el problema detectado..."><t t-esc="description or ''"/></textarea>
                                         </div>
                                         
                                         <div class="mb-4">
@@ -82,6 +102,88 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- CSS PARA LAS ESTRELLAS -->
+            <style>
+                .priority-stars-container {
+                    display: inline-block;
+                }
+                
+                .priority-stars {
+                    display: flex;
+                    gap: 8px;
+                    cursor: pointer;
+                }
+                
+                .priority-star {
+                    font-size: 2rem;
+                    color: #ddd;
+                    transition: color 0.2s;
+                    cursor: pointer;
+                }
+                
+                .priority-star:hover {
+                    color: #ffc107;
+                }
+                
+                .priority-star.active {
+                    color: #ff9800;
+                }
+                
+                .priority-label {
+                    font-size: 0.9rem;
+                }
+            </style>
+            
+            <!-- JAVASCRIPT PARA LAS ESTRELLAS -->
+            <script type="text/javascript">
+                document.addEventListener('DOMContentLoaded', function() {
+                    const stars = document.querySelectorAll('.priority-star');
+                    const priorityInput = document.getElementById('priority_input');
+                    const priorityText = document.getElementById('priority_text');
+                    
+                    const priorityLabels = {
+                        '1': 'Baja',
+                        '2': 'Normal',
+                        '3': 'Alta'
+                    };
+                    
+                    // Inicializar con valor por defecto
+                    updateStars(priorityInput.value || '2');
+                    
+                    stars.forEach(star => {
+                        star.addEventListener('click', function() {
+                            const value = this.getAttribute('data-value');
+                            priorityInput.value = value;
+                            updateStars(value);
+                        });
+                        
+                        star.addEventListener('mouseenter', function() {
+                            const value = this.getAttribute('data-value');
+                            highlightStars(value);
+                        });
+                    });
+                    
+                    document.querySelector('.priority-stars').addEventListener('mouseleave', function() {
+                        updateStars(priorityInput.value);
+                    });
+                    
+                    function updateStars(value) {
+                        highlightStars(value);
+                        priorityText.textContent = priorityLabels[value] || 'Normal';
+                    }
+                    
+                    function highlightStars(value) {
+                        stars.forEach((star, index) => {
+                            if (index < parseInt(value)) {
+                                star.classList.add('active');
+                            } else {
+                                star.classList.remove('active');
+                            }
+                        });
+                    }
+                });
+            </script>
         </t>
     </template>
 

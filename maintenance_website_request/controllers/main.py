@@ -58,6 +58,7 @@ class MaintenanceWebsiteRequest(http.Controller):
                 'maintenance_team_id': post.get('maintenance_team_id'),
                 'equipment_id': post.get('equipment_id'),
                 'description': post.get('description'),
+                'priority': post.get('priority', '2'), 
             }
             
             return request.render('maintenance_website_request.maintenance_request_form_template', values)
@@ -78,6 +79,7 @@ class MaintenanceWebsiteRequest(http.Controller):
                 'description': post.get('description'),
                 'maintenance_type': 'corrective',
                 'schedule_date': request.env.cr.now(),
+                'priority': post.get('priority', '2'), 
             }
             
             # Usar la empresa del equipo si existe
