@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Maintenance Website Request',
-    'version': '18.0.1.0.2',
+    'version': '19.0.1.0.0',
     'category': 'Maintenance',
     'summary': 'Crear solicitudes de mantenimiento desde el sitio web',
     'description': """
